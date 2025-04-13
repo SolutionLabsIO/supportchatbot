@@ -1,38 +1,33 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
-  let url = '';
+  import { goto } from '$app/navigation';
   
+  // Backup client-side redirect if server redirect fails
   onMount(() => {
-    url = window.location.origin + '/api/meta/webhook';
+    goto('/login');
   });
 </script>
 
-<div>
-  <h1>Scholistico AI Chatbot</h1>
-  
-  <div>
-    <h2>Webhook Status</h2>
-    <p>Your webhook is deployed and ready for Meta integration.</p>
-    
-    <div>
-      <p>Webhook URL:</p>
-      <code>{url}</code>
-    </div>
-  </div>
-  
-  <div>
-    <h2>Setup Instructions</h2>
-    <ol>
-      <li>Go to the <a href="https://developers.facebook.com" target="_blank">Meta Developer Portal</a></li>
-      <li>Navigate to your app settings</li>
-      <li>Go to "Webhooks" - "Add Webhook"</li>
-      <li>Enter your webhook URL</li>
-      <li>For the "Verify Token", use the value from your META_VERIFY_TOKEN</li>
-      <li>Select the events you want to subscribe to (usually "messages")</li>
-    </ol>
-  </div>
-  
-  <div>
-    <p>Once configured, your webhook will receive messages from Meta platforms and respond using Claude AI.</p>
+<div class="h-screen flex flex-col items-center justify-center bg-gray-100">
+  <div class="text-center">
+    <div class="spinner mb-4"></div>
+    <h1 class="text-2xl font-bold text-gray-800">Redirecting...</h1>
+    <p class="mt-2 text-gray-600">Please wait while we redirect you to the login page.</p>
   </div>
 </div>
+
+<style>
+  .spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    border-radius: 50%;
+    border: 4px solid rgba(59, 130, 246, 0.2);
+    border-top-color: rgba(59, 130, 246, 1);
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>

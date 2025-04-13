@@ -49,7 +49,9 @@
     
     <footer class="bg-gray-100 py-4 text-center text-gray-600 text-sm">
       <div class="container mx-auto px-4">
-        &copy; {new Date().getFullYear()} Scholistico - <a href="/privacy" class="text-blue-600 hover:underline">Privacy Policy</a>
+        &copy; {new Date().getFullYear()} Scholistico - 
+        <a href="/privacy" class="text-blue-600 hover:underline">Privacy Policy</a> | 
+        <a href="/terms" class="text-blue-600 hover:underline">Terms of Service</a>
       </div>
     </footer>
   </div>
