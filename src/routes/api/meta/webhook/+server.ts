@@ -3,10 +3,27 @@ import type { RequestEvent } from '@sveltejs/kit';
 import { getGPTReply } from '$lib/ai/respond';
 import { sendMessage } from '../sendMessage';
 import { addMessage } from '$lib/store/conversations';
-import { writeToLog } from '../../logs/+server';
+import { log } from '$lib/utils/logger';
 
 // Use environment variable or provide a placeholder during build
 const META_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || 'placeholder-verify-token';
+
+// Helper function to log to server
+async function logToServer(data: any) {
+	try {
+		const response = await fetch('/api/logs', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data)
+		});
+		return await response.json();
+	} catch (error) {
+		console.error('Error logging to server:', error);
+		return { success: false };
+	}
+}
 
 export async function GET({ url }: RequestEvent) {
 	const mode = url.searchParams.get('hub.mode');
@@ -38,7 +55,7 @@ export async function POST({ request }: RequestEvent) {
 			}
 			
 			// Log incoming message to server-side logs
-			await writeToLog({
+			await log({
 				type: 'incoming',
 				senderId,
 				message: userMessage,
@@ -56,7 +73,7 @@ export async function POST({ request }: RequestEvent) {
 			}
 			
 			// Log outgoing message to server-side logs
-			await writeToLog({
+			await log({
 				type: 'outgoing',
 				senderId,
 				message: reply,
@@ -75,7 +92,7 @@ export async function POST({ request }: RequestEvent) {
 		
 		// Log error to server-side logs
 		try {
-			await writeToLog({
+			await log({
 				type: 'error',
 				error: String(error),
 				stack: error.stack || 'No stack trace available',

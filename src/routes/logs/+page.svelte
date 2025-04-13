@@ -1,10 +1,23 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   
-  let logs = [];
+  interface LogEntry {
+    type: string;
+    senderId?: string;
+    message?: string;
+    error?: string;
+    stack?: string;
+    timestamp: string;
+    platform?: string;
+    rawEvent?: any;
+    aiResponse?: boolean;
+    [key: string]: any;
+  }
+  
+  let logs: LogEntry[] = [];
   let selectedDate = new Date().toISOString().split('T')[0];
   let isLoading = false;
-  let error = null;
+  let error: string | null = null;
   
   async function fetchLogs() {
     isLoading = true;
@@ -20,7 +33,7 @@
         error = data.error || 'Failed to fetch logs';
         logs = [];
       }
-    } catch (err) {
+    } catch (err: any) {
       error = err.message || 'An error occurred';
       logs = [];
     } finally {
@@ -45,7 +58,7 @@
         const data = await response.json();
         alert(data.error || 'Failed to clear logs');
       }
-    } catch (err) {
+    } catch (err: any) {
       alert(err.message || 'An error occurred');
     }
   }
