@@ -2,6 +2,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 import { getGPTReply } from '$lib/ai/respond';
 import { sendMessage } from '../sendMessage';
+import { addMessage } from '$lib/store/conversations';
+import { writeToLog } from '../../logs/+server';
 
 // Use environment variable or provide a placeholder during build
 const META_VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || 'placeholder-verify-token';
@@ -26,19 +28,63 @@ export async function POST({ request }: RequestEvent) {
 		const messaging = body.entry?.[0]?.messaging?.[0];
 
 		if (messaging?.sender?.id && messaging?.message?.text) {
+			const senderId = messaging.sender.id;
 			const userMessage = messaging.message.text;
-			console.log(`Received message: ${userMessage}`);
+			console.log(`Received message from ${senderId}: ${userMessage}`);
 			
+			// Log incoming message to browser store
+			if (typeof addMessage === 'function') {
+				addMessage(senderId, userMessage, true);
+			}
+			
+			// Log incoming message to server-side logs
+			await writeToLog({
+				type: 'incoming',
+				senderId,
+				message: userMessage,
+				platform: 'facebook',
+				rawEvent: messaging
+			});
+			
+			// Generate AI response
 			const reply = await getGPTReply(userMessage);
 			console.log(`Generated reply: ${reply}`);
 			
-			await sendMessage(messaging.sender.id, reply);
+			// Log outgoing message to browser store
+			if (typeof addMessage === 'function') {
+				addMessage(senderId, reply, false);
+			}
+			
+			// Log outgoing message to server-side logs
+			await writeToLog({
+				type: 'outgoing',
+				senderId,
+				message: reply,
+				platform: 'facebook',
+				aiResponse: true
+			});
+			
+			// Send message back to user
+			await sendMessage(senderId, reply);
 			console.log('Reply sent successfully');
 		}
 
 		return json({ status: 'ok' });
-	} catch (error) {
+	} catch (error: any) {
 		console.error('Error processing webhook:', error);
+		
+		// Log error to server-side logs
+		try {
+			await writeToLog({
+				type: 'error',
+				error: String(error),
+				stack: error.stack || 'No stack trace available',
+				timestamp: new Date().toISOString()
+			});
+		} catch (logError) {
+			console.error('Error writing error to log:', logError);
+		}
+		
 		return json({ status: 'error', message: 'Internal server error' }, { status: 500 });
 	}
 }
