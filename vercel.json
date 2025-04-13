@@ -4,11 +4,5 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "outputDirectory": ".svelte-kit/output",
-  "environment": {
-    "ANTHROPIC_API_KEY": "@anthropic_api_key",
-    "META_VERIFY_TOKEN": "@meta_verify_token",
-    "META_PAGE_TOKEN": "@meta_page_token",
-    "NODE_VERSION": "20.x"
-  }
+  "outputDirectory": ".svelte-kit/output"
 } 
